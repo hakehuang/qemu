@@ -128,6 +128,12 @@ softmmu_ss.add(when: 'CONFIG_MSF2', if_true: files('msf2-sysreg.c'))
 softmmu_ss.add(when: 'CONFIG_NRF51_SOC', if_true: files('nrf51_rng.c'))
 
 softmmu_ss.add(when: 'CONFIG_GRLIB', if_true: files('grlib_ahb_apb_pnp.c'))
+softmmu_ss.add(when: 'CONFIG_RT_SYSCTL', if_true: files('rt_sysctl.c'))
+softmmu_ss.add(when: 'CONFIG_RT_RSTCTL', if_true: files('rt_rstctl.c'))
+softmmu_ss.add(when: 'CONFIG_RT_CLKCTL', if_true: files('rt_clkctl.c'))
+softmmu_ss.add(when: 'CONFIG_RT_PMC', if_true: files('rt_pmc.c'))
+softmmu_ss.add(when: 'CONFIG_FXOS8700', if_true: files('fxos8700.c'))
+softmmu_ss.add(when: 'CONFIG_PCA9420', if_true: files('pca9420.c'))
 
 specific_ss.add(when: 'CONFIG_AVR_POWER', if_true: files('avr_power.c'))
 

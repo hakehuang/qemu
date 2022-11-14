@@ -88,6 +88,18 @@ static Property iotkit_properties[] = {
     DEFINE_PROP_END_OF_LIST()
 };
 
+
+static Property rt500_m33_properties[] = {
+    DEFINE_PROP_LINK("memory", ARMSSE, board_memory, TYPE_MEMORY_REGION,
+                     MemoryRegion *),
+    DEFINE_PROP_UINT32("EXP_NUMIRQ", ARMSSE, exp_numirq, 74),
+    DEFINE_PROP_UINT32("SRAM_ADDR_WIDTH", ARMSSE, sram_addr_width, 15),
+    DEFINE_PROP_UINT32("init-svtor", ARMSSE, init_svtor, 0x10000000),
+    DEFINE_PROP_BOOL("CPU0_FPU", ARMSSE, cpu_fpu[0], true),
+    DEFINE_PROP_BOOL("CPU0_DSP", ARMSSE, cpu_dsp[0], true),
+    DEFINE_PROP_END_OF_LIST()
+};
+
 static Property sse200_properties[] = {
     DEFINE_PROP_LINK("memory", ARMSSE, board_memory, TYPE_MEMORY_REGION,
                      MemoryRegion *),
@@ -195,6 +207,50 @@ static const ARMSSEDeviceInfo iotkit_devices[] = {
         .name = NULL,
     }
 };
+
+
+static const ARMSSEDeviceInfo rt595_m33_devices[] ={
+    {
+        .name = "CACHE_Control_0",
+        .type = TYPE_UNIMPLEMENTED_DEVICE,
+        .index = 0,
+        .addr = 0x40033000,
+        .size = 0x1000,
+        .ppc = NO_PPC,
+        .irq = NO_IRQ,
+    },
+    {
+        .name = "CACHE_Control_1",
+        .type = TYPE_UNIMPLEMENTED_DEVICE,
+        .index = 1,
+        .addr = 0x40034000,
+        .size = 0x1000,
+        .ppc = NO_PPC,
+        .irq = NO_IRQ,
+    },
+    {
+        .name = "IOPCTL",
+        .type = TYPE_UNIMPLEMENTED_DEVICE,
+        .index = 2,
+        .addr = 0x40004000,
+        .size = 0x1000,
+        .ppc = NO_PPC,
+        .irq = NO_IRQ,
+    },
+    {
+        .name = "PERIPHERAL_MUXES",
+        .type = TYPE_UNIMPLEMENTED_DEVICE,
+        .index = 3,
+        .addr = 0x40026000,
+        .size = 0x1000,
+        .ppc = NO_PPC,
+        .irq = NO_IRQ,
+    },
+    {
+        .name = NULL,
+    }
+};
+
 
 static const ARMSSEDeviceInfo sse200_devices[] = {
     {
@@ -564,6 +620,27 @@ static const ARMSSEInfo armsse_variants[] = {
         .props = sse300_properties,
         .devinfo = sse300_devices,
         .irq_is_common = sse300_irq_is_common,
+    },
+    {
+        .name = TYPE_RT500_M33,
+        .sse_version = ARMSSE_IOTKIT,
+        .cpu_type = ARM_CPU_TYPE_NAME("cortex-m33"),
+        .sram_banks = 1,
+        .sram_bank_base = 0x22000000,
+        .num_cpus = 1,
+        .sys_version = 0x41743,
+        .iidr = 0,
+        .cpuwait_rst = 0,
+        .has_mhus = false,
+        .has_cachectrl = true,
+        .has_cpusecctrl = true,
+        .has_cpuid = true,
+        .has_cpu_pwrctrl = true,
+        .has_sse_counter = false,
+        .has_tcms = false,
+        .props = rt500_m33_properties,
+        .devinfo = rt595_m33_devices,
+        .irq_is_common = sse200_irq_is_common,
     },
 };
 

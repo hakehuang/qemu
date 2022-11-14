@@ -753,7 +753,7 @@ static void cortex_m33_initfn(Object *obj)
     set_feature(&cpu->env, ARM_FEATURE_M_SECURITY);
     set_feature(&cpu->env, ARM_FEATURE_THUMB_DSP);
     cpu->midr = 0x410fd213; /* r0p3 */
-    cpu->pmsav7_dregion = 16;
+    cpu->pmsav7_dregion = 8; /* default is 8 not 16*/
     cpu->sau_sregion = 8;
     cpu->isar.mvfr0 = 0x10110021;
     cpu->isar.mvfr1 = 0x11000011;

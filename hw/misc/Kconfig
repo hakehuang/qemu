@@ -184,4 +184,24 @@ config AXP209_PMU
     bool
     depends on I2C
 
+config RT_SYSCTL
+    bool
+
+config RT_RSTCTL
+    bool
+
+config RT_CLKCTL
+    bool
+
+config RT_PMC
+    bool
+
+config FXOS8700
+    bool
+    depends on I2C
+
+config PCA9420
+    bool
+    depends on I2C
+
 source macio/Kconfig

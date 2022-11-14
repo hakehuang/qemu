@@ -122,6 +122,9 @@ OBJECT_DECLARE_TYPE(ARMSSE, ARMSSEClass,
  * them via the ARMSSE base class, so they have no IOTKIT() etc macros.
  */
 #define TYPE_IOTKIT "iotkit"
+#define TYPE_IMX95  "imx95"
+#define TYPE_RW610_M33  "rw610_m33"
+#define TYPE_RT500_M33  "rt500_m33"
 #define TYPE_SSE200 "sse-200"
 #define TYPE_SSE300 "sse-300"
 
@@ -142,7 +145,7 @@ OBJECT_DECLARE_TYPE(ARMSSE, ARMSSEClass,
 #define NUM_PPUS 8
 
 /* Number of CPU IRQs used by the SSE itself */
-#define NUM_SSE_IRQS 32
+#define NUM_SSE_IRQS 244
 
 struct ARMSSE {
     /*< private >*/
