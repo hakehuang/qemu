@@ -204,4 +204,7 @@ config PCA9420
     bool
     depends on I2C
 
+config DBUS_CLIENT
+    bool
+
 source macio/Kconfig

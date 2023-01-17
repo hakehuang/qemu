@@ -66,6 +66,7 @@ typedef struct rt595_memmap_tag {
     mem_region hs_gpio;
     mem_region sec_hs_gpio;
     mem_region pmc;
+    mem_region mua;
 
 } rt595_m33_memmap_t;
 
@@ -129,6 +130,7 @@ typedef struct {
     MemoryRegion lprtc_s;
     MemoryRegion pmc_s;
     MemoryRegion sdio_s[RT595_M33_USDHC_COUNT];
+    MemoryRegion mua_s;
 
     uint32_t boot_base_addr;
 

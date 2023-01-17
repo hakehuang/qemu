@@ -44,6 +44,7 @@
 #include "hw/timer/rt_ostimer.h"
 #include "hw/misc/fxos8700.h"
 #include "hw/misc/pca9420.h"
+#include "hw/misc/dbus_client.h"
 
 static rt595_m33_memmap_t _memmap;
 
@@ -86,10 +87,6 @@ static void rt595_m33_mmap_init(MachineState *machine)
     }
     _memmap.rom.start = 0x03000000;
     _memmap.rom.size = 0x30000; /* 192KiB  */
-    //_memmap.CACHE_Control_0.start = 0x40033000;
-    //_memmap.CACHE_Control_0.size = 0x1000;
-    //_memmap.CACHE_Control_1.start = 0x40034000;
-    //_memmap.CACHE_Control_1.size = 0x1000;
     _memmap.CLKCTL0.start = 0x40001000;
     _memmap.CLKCTL0.size = 0x1000;
     _memmap.CLKCTL1.start = 0x40021000;
@@ -104,10 +101,6 @@ static void rt595_m33_mmap_init(MachineState *machine)
     _memmap.SYSCTL1.size = 0x1000;
     _memmap.PMC.start = 0x40135000;
     _memmap.PMC.size = 0x1000;
-    //_memmap.IOPCTL.start = 0x40004000;
-    //_memmap.IOPCTL.size = 0x1000;
-    //_memmap.PERIPHERAL_MUXES.start = 0x40026000;
-    //_memmap.PERIPHERAL_MUXES.size = 0x1000;
     _memmap.GPIO_INT.start = 0x40025000;
     _memmap.GPIO_INT.size = 0x1000;
     _memmap.flexspi.start = 0x08000000;
@@ -182,6 +175,10 @@ static void rt595_m33_mmap_init(MachineState *machine)
     _memmap.pmc.start         = 0x40135000;
     _memmap.pmc.size          = 0x1000;
     _memmap.pmc.irq_num       = 58;
+    _memmap.mua.start         = 0x40110000;
+    _memmap.mua.size          = 0x1000;
+    _memmap.mua.irq_num       = 34;
+
 }
 
 static void rt595_dma_hwtrigger_req(Notifier *n, void *opaque)
@@ -202,6 +199,15 @@ static void make_alias(MemoryRegion *mr, MemoryRegion *container,
     memory_region_init_alias(mr, NULL, name, container, orig, size);
     /* The alias is even lower priority than unimplemented_device regions */
     memory_region_add_subregion_overlap(container, base, mr, -1500);
+}
+
+static void rt595_resolve_machine_mu(RT595_M33_MachineState *mms)
+{
+    qemu_irq irq = rt595_irq_init(mms, _memmap.mua.irq_num, 0);
+
+    sysbus_create_simple(TYPE_DBUS_CLIENT_MUA, (hwaddr)_memmap.mua.start, irq);
+    make_alias(&mms->mua_s, get_system_memory(), "mua sec", 0x10000000 + _memmap.mua.start,
+                _memmap.mua.size, _memmap.mua.start);
 }
 
 static void rt595_resolve_machine_sdio(RT595_M33_MachineState *mms, uint32_t sdio_id)
@@ -431,6 +437,7 @@ static void rt595_m33_common_init(MachineState *machine)
     rt595_resolve_ostimer(mms, 0);
     rt595_evk_i2c_init(mms);
     rt595_resolve_pmc(mms, 0);
+    rt595_resolve_machine_mu(mms);
 #endif
 
     rt595_resolve_machine_flexspi_nor(mms);    
@@ -472,8 +479,6 @@ static void rt595_m33_common_init(MachineState *machine)
     sysbus_create_simple(TYPE_RT_FLEXSPI, (hwaddr)_memmap.flexspi1_ctl.start, NULL);
     make_alias(&mms->flexspi1_ctl_s, system_memory, "flexspi1 ctl sec", 0x10000000 + _memmap.flexspi1_ctl.start,
                 _memmap.flexspi_ctl.size, _memmap.flexspi1_ctl.start);
-
-
 
     make_alias(&mms->IOPCTL_s, system_memory, "IOPCTL_s sec", 0x10000000 + _memmap.IOPCTL.start,
                 _memmap.IOPCTL.size, _memmap.IOPCTL.start);

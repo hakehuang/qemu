@@ -128,6 +128,7 @@ softmmu_ss.add(when: 'CONFIG_MSF2', if_true: files('msf2-sysreg.c'))
 softmmu_ss.add(when: 'CONFIG_NRF51_SOC', if_true: files('nrf51_rng.c'))
 
 softmmu_ss.add(when: 'CONFIG_GRLIB', if_true: files('grlib_ahb_apb_pnp.c'))
+softmmu_ss.add(when: 'CONFIG_DBUS_CLIENT', if_true: files('dbus_client_mua.c', 'dbus_client_mub.c'))
 softmmu_ss.add(when: 'CONFIG_RT_SYSCTL', if_true: files('rt_sysctl.c'))
 softmmu_ss.add(when: 'CONFIG_RT_RSTCTL', if_true: files('rt_rstctl.c'))
 softmmu_ss.add(when: 'CONFIG_RT_CLKCTL', if_true: files('rt_clkctl.c'))
