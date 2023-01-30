@@ -19,13 +19,9 @@
 #include "qapi/error.h"
 #include "qom/object_interfaces.h"
 #include "qapi/qmp/qerror.h"
-#include "trace.h"
 #include "qom/object.h"
 #include "hw/misc/dbus_client.h"
 #include "hw/irq.h"
-#include "sysemu/sysemu.h"
-#include "hw/arm/boot.h"
-#include "hw/or-irq.h"
 #include "migration/vmstate.h"
 
 static uint64_t dbus_client_mub_read(void *opaque, hwaddr offset,

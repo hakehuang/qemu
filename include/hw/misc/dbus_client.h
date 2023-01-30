@@ -15,16 +15,7 @@
 #ifndef DBUS_CLIENT_MU_H
 #define DBUS_CLIENT_MU_H
 
-#include "qemu/osdep.h"
-#include "qemu/units.h"
-#include "qapi/error.h"
 #include "qemu/dbus.h"
-#include "qemu/thread.h"
-#include "qemu/error-report.h"
-#include "exec/address-spaces.h"
-#include "sysemu/sysemu.h"
-#include "hw/arm/boot.h"
-#include "hw/or-irq.h"
 #include "hw/sysbus.h"
 #include "qom/object.h"
 
