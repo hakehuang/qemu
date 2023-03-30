@@ -259,6 +259,8 @@ static void sdhci_set_inserted(DeviceState *dev, bool level)
             if (s->norintstsen & SDHC_NISEN_INSERT) {
                 s->norintsts |= SDHC_NIS_INSERT;
             }
+            /*always ensure the clock is ready */
+            s->clkcon |= SDHC_CLOCK_SDCLK_EN | SDHC_CLOCK_INT_STABLE | SDHC_CLOCK_INT_EN;
         } else {
             s->prnsts = 0x1fa0000;
             s->pwrcon &= ~SDHC_POWER_ON;
@@ -1200,7 +1202,7 @@ sdhci_write(void *opaque, hwaddr offset, uint64_t val, unsigned size)
          * capabilities register */
         if (!(s->capareg & R_SDHC_CAPAB_SDMA_MASK)) {
             value &= ~SDHC_TRNS_DMA;
-        }
+        } 
         MASKED_WRITE(s->trnmod, mask, value & SDHC_TRNMOD_MASK);
         MASKED_WRITE(s->cmdreg, mask >> 16, value >> 16);
 
@@ -1397,16 +1399,19 @@ void sdhci_common_realize(SDHCIState *s, Error **errp)
 {
     ERRP_GUARD();
 
-    switch (s->endianness) {
-    case DEVICE_LITTLE_ENDIAN:
-        s->io_ops = &sdhci_mmio_le_ops;
-        break;
-    case DEVICE_BIG_ENDIAN:
-        s->io_ops = &sdhci_mmio_be_ops;
-        break;
-    default:
-        error_setg(errp, "Incorrect endianness");
-        return;
+    if (s->io_ops == NULL) {
+        printf("init sdhci call back\r\n");
+        switch (s->endianness) {
+            case DEVICE_LITTLE_ENDIAN:
+                s->io_ops = &sdhci_mmio_le_ops;
+            break;
+            case DEVICE_BIG_ENDIAN:
+                s->io_ops = &sdhci_mmio_be_ops;
+            break;
+            default:
+                error_setg(errp, "Incorrect endianness");
+            return;
+        }
     }
 
     sdhci_init_readonly_registers(s, errp);
@@ -1669,9 +1674,11 @@ static uint64_t usdhc_read(void *opaque, hwaddr offset, unsigned size)
     case USDHC_TUNE_CTRL_STATUS:
     case USDHC_UNDOCUMENTED_REG27:
     case USDHC_TUNING_CTRL:
-    case USDHC_MIX_CTRL:
     case USDHC_WTMK_LVL:
         ret = 0;
+        break;
+    case USDHC_MIX_CTRL:
+        ret = s->trnmod;
         break;
     }
 

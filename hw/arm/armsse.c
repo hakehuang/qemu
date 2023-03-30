@@ -247,6 +247,24 @@ static const ARMSSEDeviceInfo rt595_m33_devices[] ={
         .irq = NO_IRQ,
     },
     {
+        .name = "HS_GPIO",
+        .type = TYPE_UNIMPLEMENTED_DEVICE,
+        .index = 4,
+        .addr = 0x40100000,
+        .size = 0x3000,
+        .ppc = NO_PPC,
+        .irq = NO_IRQ,
+    },
+    {
+        .name = "SEC_HS_GPIO",
+        .type = TYPE_UNIMPLEMENTED_DEVICE,
+        .index = 5,
+        .addr = 0x40204000,
+        .size = 0x3000,
+        .ppc = NO_PPC,
+        .irq = NO_IRQ,
+    },
+    {
         .name = NULL,
     }
 };

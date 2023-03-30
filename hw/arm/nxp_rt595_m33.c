@@ -47,6 +47,10 @@
 
 static rt595_m33_memmap_t _memmap;
 
+static  qemu_irq rt595_irq_init(void * opaque, int n, int cpu_id);
+
+#define RT595_SDIO_CAPABILITIES 0x057834b4
+
 /*=======================================
     RT595 M33 CORE module Start
  ========================================*/
@@ -180,6 +184,7 @@ static void rt595_dma_hwtrigger_req(Notifier *n, void *opaque)
 }
 
 
+
 /*
  * Create an alias region in @container of @size bytes starting at @base
  * which mirrors the memory starting at @orig.
@@ -190,6 +195,45 @@ static void make_alias(MemoryRegion *mr, MemoryRegion *container,
     memory_region_init_alias(mr, NULL, name, container, orig, size);
     /* The alias is even lower priority than unimplemented_device regions */
     memory_region_add_subregion_overlap(container, base, mr, -1500);
+}
+
+static void rt595_resolve_machine_sdio(RT595_M33_MachineState *mms, uint32_t sdio_id)
+{
+    char *sdio_name = g_strdup_printf("sdio%d", sdio_id);
+    char *sdio_name_s = g_strdup_printf("sdio%d_s", sdio_id);
+    qemu_irq irq = rt595_irq_init(mms, _memmap.sdio[sdio_id].irq_num, 0);
+
+     object_initialize_child(OBJECT(mms), sdio_name, &mms->sdio[sdio_id], TYPE_IMX_USDHC);
+    //object_initialize_child(OBJECT(mms), sdio_name, &mms->sdio[sdio_id], TYPE_SYSBUS_SDHCI);
+    /* UHS-I SDIO3.0 SDR104 1.8V ADMA */
+    object_property_set_uint(OBJECT(&mms->sdio[sdio_id]), "sd-spec-version", 3,
+                             &error_abort);
+    object_property_set_uint(OBJECT(&mms->sdio[sdio_id]), "capareg",
+                             RT595_SDIO_CAPABILITIES, &error_abort);
+    object_property_set_uint(OBJECT(&mms->sdio[sdio_id]), "vendor",
+                             SDHCI_VENDOR_IMX, &error_abort);
+    if (!sysbus_realize(SYS_BUS_DEVICE(&mms->sdio[sdio_id]), &error_fatal)) {
+        return;
+    }
+    sysbus_connect_irq(SYS_BUS_DEVICE(&mms->sdio[sdio_id]), 0, irq);
+    sysbus_mmio_map(SYS_BUS_DEVICE(&mms->sdio[sdio_id]), 0, _memmap.sdio[sdio_id].start);
+    g_free(sdio_name);
+
+    make_alias(&mms->sdio_s[sdio_id], get_system_memory(), sdio_name_s, 0x10000000 + _memmap.sdio[sdio_id].start,
+            _memmap.sdio[sdio_id].size, _memmap.sdio[sdio_id].start);
+    g_free(sdio_name_s);
+
+    BusState *bus;
+    DeviceState *carddev;
+    DriveInfo *di;
+    BlockBackend *blk;
+
+    di = drive_get(IF_SD, 0, sdio_id);
+    blk = di ? blk_by_legacy_dinfo(di) : NULL;
+    bus = qdev_get_child_bus(DEVICE(&mms->sdio[sdio_id]), "sd-bus");
+    carddev = qdev_new(TYPE_SD_CARD);
+    qdev_prop_set_drive_err(carddev, "drive", blk, &error_fatal);
+    qdev_realize_and_unref(carddev, bus, &error_fatal);
 }
 
 static void rt595_resolve_machine_flexspi_nor(RT595_M33_MachineState *mms)
@@ -422,6 +466,8 @@ static void rt595_m33_common_init(MachineState *machine)
     mms->hwtrigger_notifier.notify = rt595_dma_hwtrigger_req;
     dma_trigger_notifier_connect(&mms->hwtrigger_notifier);
 
+    rt595_resolve_machine_sdio(mms, 0);
+    rt595_resolve_machine_sdio(mms, 1);
     /* ram boot  */
     armv7m_load_kernel(ARM_CPU(first_cpu), machine->kernel_filename, 0x00000000, 0x400000);
 }

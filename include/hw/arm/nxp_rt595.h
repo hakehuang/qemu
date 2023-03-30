@@ -19,6 +19,7 @@
 #include "hw/arm/armsse-version.h"
 #include "hw/boards.h"
 #include "hw/i2c/rt_flexcomm_i2c.h"
+#include "hw/sd/sdhci.h"
 
 /*=======================================
     RW610 CM33 CORE module Start
@@ -27,6 +28,7 @@
 #define RT595_M33_SRAM_BANKS  32
 #define RT595_M33_FLEXCOMM_PORTS 17
 #define RT595_M33_OS_TIMER_COUNT 2
+#define RT595_M33_USDHC_COUNT 2
 
 typedef struct mem_region_t {
     uint32_t start;
@@ -127,6 +129,7 @@ typedef struct {
     Notifier hwtrigger_notifier;
 
     RTFLEXCOMMI2CState * flexcomm_i2c_ctl[RT595_M33_FLEXCOMM_PORTS];
+    SDHCIState sdio[RT595_M33_USDHC_COUNT];
 
     SplitIRQ sec_resp_splitter;
     Clock *sysclk;
