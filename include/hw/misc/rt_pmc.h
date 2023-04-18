@@ -17,9 +17,14 @@
 
 #include "hw/sysbus.h"
 #include "qom/object.h"
+#include "qemu/timer.h"
 
 #define TYPE_RT_PMC "rt_pmc"
 OBJECT_DECLARE_SIMPLE_TYPE(RTPMCState, RT_PMC)
+
+#define FLAG_AUTOWKF_MASK (1U<<28)
+#define AUTOWKUP_AUTOWKTIME 0xFFFF
+#define CTRL_AUTOWKF_MASK (1U<<28)
 
 struct RTPMCState {
     /*< private >*/
@@ -39,6 +44,22 @@ struct RTPMCState {
     uint32_t PADVRANGE;
     uint32_t MEMSEQCTRL;
     uint32_t TSENSOR;
+
+    uint32_t timer_interval;
+    QEMUTimer *timer;
+    uint32_t state;
+
+    uint32_t count;
+
+    qemu_irq irq;
 };
+
+typedef enum { 
+    ePMC_Active = 11000,
+    ePMC_Sleep  = 12000,
+    ePMC_Deep_Sleep = 13000,
+    ePMC_Deep_Power_Down = 14000,
+    ePMC_Full_Deep_Power_Down = 15000,
+} ePMState;
 
 #endif /* RT_PMC_H */

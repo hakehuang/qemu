@@ -21,7 +21,6 @@
 #include "hw/misc/rt_pmc.h"
 #include "migration/vmstate.h"
 
-
 #define RT_PMC_NAME "PMC for NXP RTxxx series"
 
 static uint64_t rt_pmc_read(void *opaque, hwaddr offset, unsigned size)
@@ -35,7 +34,7 @@ static uint64_t rt_pmc_read(void *opaque, hwaddr offset, unsigned size)
             value = 0;
             break;
         case 0x8:
-           value = s->FLAGS;
+           value = 0;
             break;
         case 0xC:
            value = s->CTRL;
@@ -75,13 +74,14 @@ static void rt_pmc_write(void *opaque, hwaddr offset, uint64_t value,
 {
     RTPMCState *s = RT_PMC(opaque);
     uint32_t v32 = (uint32_t)value;
+    printf("\r\nrt-pmc write 0x%lx = 0x%lx\r\n", offset, value);
 
     switch(offset) {
         case 0x4:
             /* RO */
             break;
         case 0x8:
-            s->FLAGS = v32;
+            s->FLAGS &= ~v32;//w1c
             break;
         case 0xC:
             s->CTRL = v32;
@@ -131,6 +131,8 @@ static void rt_pmc_reset_at_boot(DeviceState *dev)
     s->PADVRANGE = 0x0;
     s->MEMSEQCTRL = 0x3F;
     s->TSENSOR = 0x0;
+
+    s->count = 0;
 }
 
 static const MemoryRegionOps rt_pmc_ops = {
@@ -138,6 +140,46 @@ static const MemoryRegionOps rt_pmc_ops = {
     .write = rt_pmc_write,
     .endianness = DEVICE_NATIVE_ENDIAN,
 };
+
+static void rt_pmc_tick(void *opaque)
+{
+    RTPMCState *s = RT_PMC(opaque);
+
+    switch(s->state) {
+        case ePMC_Active:
+            break;
+        case ePMC_Sleep:
+            break;
+        case ePMC_Deep_Sleep:
+            break;
+        case ePMC_Deep_Power_Down:
+            break;
+        case ePMC_Full_Deep_Power_Down:
+            break;
+        default:
+            break;
+    }
+
+    if ((s->CTRL & CTRL_AUTOWKF_MASK) == CTRL_AUTOWKF_MASK && s->AUTOWKUP)
+    {
+        s->count++;
+        if(s->count >= s->AUTOWKUP)
+        {
+            s->count = 0;
+            printf("irq up\r\n");
+            qemu_set_irq(s->irq, 1);
+            s->FLAGS |= FLAG_AUTOWKF_MASK;
+        }
+    }
+
+    /* every 62.5 ns */
+    if (s->timer){
+        int64_t now = qemu_clock_get_ns(QEMU_CLOCK_REALTIME);
+
+        s->timer_interval = 62;
+        timer_mod(s->timer, now + s->timer_interval);
+    }
+}
 
 static void rt_pmc_realize(DeviceState *dev, Error **errp)
 {
@@ -147,6 +189,24 @@ static void rt_pmc_realize(DeviceState *dev, Error **errp)
     memory_region_init_io(&s->iomem, OBJECT(s), &rt_pmc_ops, s,
                           TYPE_RT_PMC, 0x1000);
     sysbus_init_mmio(sbd, &s->iomem);
+
+    s->timer_interval = 62; /* every 62.5 ns */
+    s->timer = timer_new_ns(QEMU_CLOCK_REALTIME, rt_pmc_tick, s);
+    int64_t now = qemu_clock_get_ns(QEMU_CLOCK_REALTIME);
+
+    timer_mod(s->timer, now + s->timer_interval);
+
+}
+
+static void rt_pmc_unrealize(DeviceState *dev)
+{
+    RTPMCState *s = RT_PMC(dev);
+
+    if(s->timer){
+        timer_del(s->timer);
+        s->timer = NULL;
+    }
+
 }
 
 static const VMStateDescription vmstate_rt_pmc = {
@@ -173,6 +233,8 @@ static void rt_pmc_init(Object *obj)
 {
     RTPMCState *s = RT_PMC(obj);
 
+    sysbus_init_irq(SYS_BUS_DEVICE(obj), &s->irq);
+
     memory_region_init_io(&s->iomem, obj, &rt_pmc_ops, s, TYPE_RT_PMC, 0x1000);
     sysbus_init_mmio(SYS_BUS_DEVICE(obj), &s->iomem);
 
@@ -183,6 +245,7 @@ static void rt_pmc_class_init(ObjectClass *klass, void *data)
     DeviceClass *dc = DEVICE_CLASS(klass);
 
     dc->realize = rt_pmc_realize;
+    dc->unrealize = rt_pmc_unrealize;
     dc->vmsd = &vmstate_rt_pmc;
     dc->reset = rt_pmc_reset_at_boot;
 }

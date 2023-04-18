@@ -62,6 +62,10 @@ typedef struct rt595_memmap_tag {
     mem_region flexspi1_ctl;
     mem_region lpadc;
     mem_region ostimer[RT595_M33_OS_TIMER_COUNT];
+    mem_region sdio[RT595_M33_USDHC_COUNT];
+    mem_region hs_gpio;
+    mem_region sec_hs_gpio;
+    mem_region pmc;
 
 } rt595_m33_memmap_t;
 
@@ -103,6 +107,7 @@ typedef struct {
     MemoryRegion flexcomm_s[RT595_M33_FLEXCOMM_PORTS];
     MemoryRegion lpadc;
     MemoryRegion lprtc;
+    MemoryRegion pmc;
 
     MemoryRegion CACHE_Control_0_s;
     MemoryRegion CACHE_Control_1_s;
@@ -122,6 +127,8 @@ typedef struct {
     MemoryRegion os_timer_sec[RT595_M33_OS_TIMER_COUNT];
     MemoryRegion lpadc_s;
     MemoryRegion lprtc_s;
+    MemoryRegion pmc_s;
+    MemoryRegion sdio_s[RT595_M33_USDHC_COUNT];
 
     uint32_t boot_base_addr;
 

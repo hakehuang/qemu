@@ -173,8 +173,15 @@ static void rt595_m33_mmap_init(MachineState *machine)
     _memmap.lpadc.dma_hwtrg_nr = 24;
     _memmap.ostimer[0].start   = 0x40113000;
     _memmap.ostimer[0].irq_num = 41;
-    _memmap.lpadc.size         = 0x1000;
-    _memmap.lpadc.irq_num      = 41;
+    _memmap.sdio[0].start     = 0x40136000;
+    _memmap.sdio[0].size      = 0x1000;
+    _memmap.sdio[0].irq_num   = 45;
+    _memmap.sdio[1].start     = 0x40137000;
+    _memmap.sdio[1].size      = 0x1000;
+    _memmap.sdio[1].irq_num   = 46;
+    _memmap.pmc.start         = 0x40135000;
+    _memmap.pmc.size          = 0x1000;
+    _memmap.pmc.irq_num       = 58;
 }
 
 static void rt595_dma_hwtrigger_req(Notifier *n, void *opaque)
@@ -347,6 +354,17 @@ static void rt595_resolve_ostimer(RT595_M33_MachineState *mms, int id)
     g_free(ostimer_name);
 }
 
+static void rt595_resolve_pmc(RT595_M33_MachineState *mms, int id)
+{
+    char *pmc_name = g_strdup_printf("pmc%d_s", id);
+    qemu_irq irq = rt595_irq_init(mms, _memmap.pmc.irq_num, 0);
+
+    sysbus_create_simple(TYPE_RT_PMC, (hwaddr)_memmap.pmc.start, irq);
+    make_alias(&mms->pmc_s, get_system_memory(), pmc_name, 0x10000000 + _memmap.pmc.start,
+                _memmap.pmc.size, _memmap.pmc.start);
+    g_free(pmc_name);
+}
+
 static void rt595_m33_common_init(MachineState *machine)
 {
     RT595_M33_MachineState *mms = RT595_M33_MACHINE(machine);
@@ -412,6 +430,7 @@ static void rt595_m33_common_init(MachineState *machine)
     rt595_resolve_lpadc(mms, 0);
     rt595_resolve_ostimer(mms, 0);
     rt595_evk_i2c_init(mms);
+    rt595_resolve_pmc(mms, 0);
 #endif
 
     rt595_resolve_machine_flexspi_nor(mms);    
@@ -442,9 +461,9 @@ static void rt595_m33_common_init(MachineState *machine)
     make_alias(&mms->CLKCTL1_s, system_memory, "clkctrl1 sec", 0x10000000 + _memmap.CLKCTL1.start,
                 _memmap.CLKCTL1.size, _memmap.CLKCTL1.start);
 
-    sysbus_create_simple(TYPE_RT_PMC, (hwaddr)_memmap.PMC.start, NULL);
-    make_alias(&mms->PMC_s, system_memory, "PMC sec", 0x10000000 + _memmap.PMC.start,
-                _memmap.PMC.size, _memmap.PMC.start);
+    //sysbus_create_simple(TYPE_RT_PMC, (hwaddr)_memmap.PMC.start, NULL);
+    //make_alias(&mms->PMC_s, system_memory, "PMC sec", 0x10000000 + _memmap.PMC.start,
+    //            _memmap.PMC.size, _memmap.PMC.start);
 
     sysbus_create_simple(TYPE_RT_FLEXSPI, (hwaddr)_memmap.flexspi_ctl.start, NULL);
     make_alias(&mms->flexspi_ctl_s, system_memory, "flexspi ctl sec", 0x10000000 + _memmap.flexspi_ctl.start,

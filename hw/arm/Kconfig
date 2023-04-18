@@ -596,3 +596,6 @@ config NXP_RT595
     select RT_OSTIMER
     select FXOS8700
     select PCA9420
+    select DBUS_CLIENT
+    select SDHCI
+    select RT_PMC
