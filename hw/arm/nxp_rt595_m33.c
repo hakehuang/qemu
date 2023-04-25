@@ -45,6 +45,7 @@
 #include "hw/misc/fxos8700.h"
 #include "hw/misc/pca9420.h"
 #include "hw/misc/dbus_client.h"
+#include "hw/gpio/rt_pint.h"
 
 static rt595_m33_memmap_t _memmap;
 
@@ -178,6 +179,16 @@ static void rt595_m33_mmap_init(MachineState *machine)
     _memmap.mua.start         = 0x40110000;
     _memmap.mua.size          = 0x1000;
     _memmap.mua.irq_num       = 34;
+    _memmap.pint[0].start        = 0x40025000;
+    _memmap.pint[0].size          = 0x1000;
+    _memmap.pint[0].irq_num       = 4;
+    _memmap.pint[1].irq_num       = 5;
+    _memmap.pint[2].irq_num       = 6;
+    _memmap.pint[3].irq_num       = 7;
+    _memmap.pint[4].irq_num       = 35;
+    _memmap.pint[5].irq_num       = 36;
+    _memmap.pint[6].irq_num       = 37;
+    _memmap.pint[7].irq_num       = 38;
 
 }
 
@@ -199,6 +210,23 @@ static void make_alias(MemoryRegion *mr, MemoryRegion *container,
     memory_region_init_alias(mr, NULL, name, container, orig, size);
     /* The alias is even lower priority than unimplemented_device regions */
     memory_region_add_subregion_overlap(container, base, mr, -1500);
+}
+
+static void rt595_resolve_machine_pint(RT595_M33_MachineState *mms)
+{
+    qemu_irq irq_0 = rt595_irq_init(mms, _memmap.pint[0].irq_num, 0);
+    qemu_irq irq_1 = rt595_irq_init(mms, _memmap.pint[1].irq_num, 0);
+    qemu_irq irq_2 = rt595_irq_init(mms, _memmap.pint[2].irq_num, 0);
+    qemu_irq irq_3 = rt595_irq_init(mms, _memmap.pint[3].irq_num, 0);
+    qemu_irq irq_4 = rt595_irq_init(mms, _memmap.pint[4].irq_num, 0);
+    qemu_irq irq_5 = rt595_irq_init(mms, _memmap.pint[5].irq_num, 0);
+    qemu_irq irq_6 = rt595_irq_init(mms, _memmap.pint[6].irq_num, 0);
+    qemu_irq irq_7 = rt595_irq_init(mms, _memmap.pint[7].irq_num, 0);
+
+    sysbus_create_varargs(TYPE_RT_PINT, (hwaddr)_memmap.pint[0].start, irq_0,
+        irq_1, irq_2, irq_3, irq_4, irq_5, irq_6, irq_7, NULL);
+    make_alias(&mms->pint_s, get_system_memory(), "pint sec", 0x10000000 + _memmap.pint[0].start,
+                _memmap.pint[0].size, _memmap.pint[0].start);
 }
 
 static void rt595_resolve_machine_mu(RT595_M33_MachineState *mms)
@@ -438,6 +466,7 @@ static void rt595_m33_common_init(MachineState *machine)
     rt595_evk_i2c_init(mms);
     rt595_resolve_pmc(mms, 0);
     rt595_resolve_machine_mu(mms);
+    rt595_resolve_machine_pint(mms);
 #endif
 
     rt595_resolve_machine_flexspi_nor(mms);    

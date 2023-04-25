@@ -599,3 +599,4 @@ config NXP_RT595
     select DBUS_CLIENT
     select SDHCI
     select RT_PMC
+    select RT_PINT
