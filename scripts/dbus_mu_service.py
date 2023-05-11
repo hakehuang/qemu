@@ -88,6 +88,12 @@ class DBusMu(dbus.service.Object):
         '''
         self.mua_data[hex(self.VER)]  = 0x01000001
         self.mua_data[hex(self.SR)] = 0x00F00080
+        self.mua_data[hex(self.CR)] = 0x0
+        self.mua_data[hex(self.PAR)] = 0x0
+        for _tr in self.TRN:
+                self.mua_data[hex(_tr)] = 0x0
+        for _rr in self.RRN:
+                self.mua_data[hex(_rr)] = 0x0
 
     def init_mub_regs(self):
         '''
@@ -95,6 +101,13 @@ class DBusMu(dbus.service.Object):
         '''
         self.mub_data[hex(self.VER)]  = 0x01000001
         self.mub_data[hex(self.SR)] = 0x00F00080
+        self.mub_data[hex(self.CR)] = 0x0
+        self.mub_data[hex(self.PAR)] = 0x0
+        for _tr in self.TRN:
+                self.mub_data[hex(_tr)] = 0x0
+        for _rr in self.RRN:
+                self.mub_data[hex(_rr)] = 0x0
+
 
     def mu_updates(self, _type = "read", offset = 0xFF):
         ''''
@@ -106,17 +119,17 @@ class DBusMu(dbus.service.Object):
         if _type == "mua_read":
             if offset in self.RRN:
                 # clear the sr Rx full of mua
-                self.mua_data[hex(self.SR)] &= ~(1<<(24 + (offset - self.RRN[0])/4))
+                self.mua_data[hex(self.SR)] &= ~(1<<(24 + int((offset - self.RRN[0])/4)))
                 # set the sr Tx empty of mub of mub
-                self.mub_data[hex(self.SR)] |= 1<<(20 + (offset - self.RRN[0])/4)
+                self.mub_data[hex(self.SR)] |= 1<<(20 + int((offset - self.RRN[0])/4))
         elif _type == "mua_write":
             if offset in self.TRN:
                 # write to Rxn of mub
                 self.mub_data[hex(offset + self.TRN[0])] = self.mua_data[hex(offset)]
                 #set Rn full of mub
-                self.mub_data[hex(self.SR)] |= 1<<(24 + (offset - self.TRN[0])/4)
+                self.mub_data[hex(self.SR)] |= 1<<(24 + int((offset - self.TRN[0])/4))
                 #clear the tx empty of mua
-                self.mua_data[hex(self.SR)] &= ~(1<<(20 + (offset - self.TRN[0])/4))
+                self.mua_data[hex(self.SR)] &= ~(1<<(20 + int((offset - self.TRN[0])/4)))
             elif offset == self.CR:
                 if self.mua_data[hex(self.CR)] & self.GIRN_MASK:
                     _v = self.mua_data[hex(self.CR)] & self.GIRN_MASK
@@ -132,17 +145,17 @@ class DBusMu(dbus.service.Object):
         elif _type == "mub_read":
             if offset in self.RRN:
                 # clear the sr Rx full of mub
-                self.mub_data[hex(self.SR)] &= ~(1<<(24 + (offset - self.RRN[0])/4))
+                self.mub_data[hex(self.SR)] &= ~(1<<(24 + int((offset - self.RRN[0])/4)))
                 # set the sr Tx empty of mua
-                self.mua_data[hex(self.SR)] |= 1<<(20 + (offset - self.RRN[0])/4)
+                self.mua_data[hex(self.SR)] |= 1<<(20 + int((offset - self.RRN[0])/4))
         elif _type == "mub_write":
             if offset in self.TRN:
                 # write to Rxn of mua
                 self.mua_data[hex(offset + self.TRN[0])] = self.mub_data[hex(offset)]
                 #set sr rx full of mua
-                self.mua_data[hex(self.SR)] |= 1<<(24 + (offset - self.TRN[0])/4)
+                self.mua_data[hex(self.SR)] |= 1<<(24 + int((offset - self.TRN[0])/4))
                 # clear sr tx empty of mub
-                self.mub_data[hex(self.SR)] &= ~(1<<(20 + (offset - self.TRN[0])/4))
+                self.mub_data[hex(self.SR)] &= ~(1<<(20 + int((offset - self.TRN[0])/4)))
             elif offset == self.CR:
                 if self.mub_data[hex(self.CR)] & self.GIRN_MASK:
                     _v = self.mub_data[hex(self.CR)] & self.GIRN_MASK
@@ -157,28 +170,34 @@ class DBusMu(dbus.service.Object):
         else:
             pass
 
-        if self.mua_data[self.SR] & self.mua_data[self.CR] != 0:
+        if self.mua_data[hex(self.SR)] & self.mua_data[hex(self.CR)] != 0:
             self.MUASignal("mua interrupt")
 
-        if self.mub_data[self.SR] & self.mub_data[self.CR] != 0:
+        if self.mub_data[hex(self.SR)] & self.mub_data[hex(self.CR)] != 0:
             self.MUBSignal("mub interrupt")
 
 
 
-    @dbus.service.method("org.qemu.client.mu",
+    @dbus.service.method("org.qemu.client",
                          in_signature='s', out_signature='as')
     def HelloWorld(self, hello_message):
         '''
             HelloWorld
         '''
         print("service:", str(hello_message))
-        if hello_message == "mua":
-            self.mua_data.clear()
-            self.init_mua_regs()
-        else:
-            self.mub_data.clear()
-            self.init_mub_regs()
         return ["Hello", " from example-service.py", "with unique name",
+                session_bus.get_unique_name()]
+
+    @dbus.service.method("org.qemu.client.mua",
+                         in_signature='s', out_signature='as')
+    def MUA_init(self, message):
+        '''
+            MUA init
+        '''
+        print("service: mua", str(message))
+        self.mua_data.clear()
+        self.init_mua_regs()
+        return ["MUA Init", " from service.py", "with unique name",
                 session_bus.get_unique_name()]
 
     @dbus.service.method("org.qemu.client.mua",
@@ -198,7 +217,7 @@ class DBusMu(dbus.service.Object):
         '''
         ret = 0
 
-        logger.debug(hex(ret))
+        #logger.debug(hex(offset))
         if hex(offset) in self.mub_data:
             ret = self.mua_data[hex(offset)]
 
@@ -255,6 +274,19 @@ class DBusMu(dbus.service.Object):
         return 'Signal emitted'
 
     # ========== mub operations ======================
+
+    @dbus.service.method("org.qemu.client.mub",
+                         in_signature='s', out_signature='as')
+    def MUB_init(self, message):
+        '''
+            MUB init
+        '''
+        print("service: mub", str(message))
+        self.mub_data.clear()
+        self.init_mub_regs()
+        return ["MUB Init", " from service.py", "with unique name",
+                session_bus.get_unique_name()]
+
 
     @dbus.service.method("org.qemu.client.mub",
                          in_signature='t', out_signature='u')

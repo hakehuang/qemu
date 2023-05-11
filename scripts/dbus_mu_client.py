@@ -82,11 +82,11 @@ def main():
     # ... or create an Interface wrapper for the remote object
     iface = dbus.Interface(remote_object, "org.qemu.client.mua")
 
-    read_reply = iface.MUARead(0x281)
+    read_reply = iface.MUARead(0x0)
 
     print("client:", read_reply)
 
-    write_reply = iface.MUAWrite(0x200, 1)
+    write_reply = iface.MUAWrite(0x40, 1)
 
     print("client:", write_reply)
 

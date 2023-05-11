@@ -138,10 +138,15 @@ static void dbus_client_mub_init(Object *obj)
     if (!s->dbus.proxy) {
         warn_report("%s: Failed to find proxy Id 0", __func__);
     } else {
-        g_dbus_proxy_call_sync(s->dbus.proxy, "HelloWorld",
-                                   g_variant_new ("(s)", "mub"),
+        result = g_dbus_proxy_call_sync(s->dbus.proxy, "MUB_init",
+                                   g_variant_new ("(s)", "1234"),
                                    G_DBUS_CALL_FLAGS_NO_AUTO_START,
                                    -1, NULL, &err);
+        if (!result) {
+            error_report("%s: Failed to call: %s", __func__, err->message);
+            g_object_unref(s->dbus.proxy);
+            s->dbus.proxy = NULL;
+        }
         g_signal_connect(s->dbus.proxy,
                         "g-signal",
                         G_CALLBACK (on_signal),
