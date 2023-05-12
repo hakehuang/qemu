@@ -168,16 +168,36 @@ static void xt_init(const XtRT595BoardDesc *board, MachineState *machine)
     CPUXtensaState *env = NULL;
     uint32_t freq = 10000000;
     const char *kernel_filename = machine->kernel_filename;
+    ram_addr_t ram_size = machine->ram_size;
 
     cpu = XTENSA_CPU(cpu_create(machine->cpu_type));
     env = &cpu->env;
     env->sregs[PRID] = 0;
-    xtensa_select_static_vectors(env, 0);
+    //xtensa_select_static_vectors(env, 0);
     qemu_register_reset(xt_rt595_reset, cpu);
     /* Need MMU initialized prior to ELF loading,
      * so that ELF gets loaded into virtual addresses
      */
     cpu_reset(CPU(cpu));
+
+    /* faking core settigs as xtensa need license  */
+    if (env) {
+        XtensaMemory sysram = env->config->sysram;
+
+        sysram.location[0].size = ram_size;
+        xtensa_create_memory_regions(&env->config->instrom, "xtensa.instrom",
+                                     get_system_memory());
+        xtensa_create_memory_regions(&env->config->instram, "xtensa.instram",
+                                     get_system_memory());
+        xtensa_create_memory_regions(&env->config->datarom, "xtensa.datarom",
+                                     get_system_memory());
+        xtensa_create_memory_regions(&env->config->dataram, "xtensa.dataram",
+                                     get_system_memory());
+        xtensa_create_memory_regions(&env->config->sysrom, "xtensa.sysrom",
+                                     get_system_memory());
+        xtensa_create_memory_regions(&sysram, "xtensa.sysram",
+                                     get_system_memory());
+    }
 
     xt_rt595_init(env, freq);
 
