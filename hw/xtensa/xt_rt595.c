@@ -99,7 +99,7 @@ static void rt595_dsp_mmap_init(void)
 
     _memmap.mub.start         = 0x40111000;
     _memmap.mub.size          = 0x1000;
-    _memmap.mub.irq_num       = 23;
+    _memmap.mub.irq_num       = 15;
 
 }
 
