@@ -19,7 +19,7 @@ python3 dbus_mu_client.py --exit-service
 
 # Copyright (C) 2004-2006 Red Hat Inc. <http://www.redhat.com/>
 # Copyright (C) 2005-2007 Collabora Ltd. <http://www.collabora.co.uk/>
-# Copyright (C) 2022 NXP
+# Copyright (C) 2022-2023 NXP
 #
 # SPDX-License-Identifier: MIT
 #
@@ -87,7 +87,7 @@ class DBusMu(dbus.service.Object):
             init_mua registers
         '''
         self.mua_data[hex(self.VER)]  = 0x01000001
-        self.mua_data[hex(self.SR)] = 0x00F00080
+        self.mua_data[hex(self.SR)] = 0x00F00000 #bit 7 not reset
         self.mua_data[hex(self.CR)] = 0x0
         self.mua_data[hex(self.PAR)] = 0x0
         for _tr in self.TRN:
@@ -100,7 +100,7 @@ class DBusMu(dbus.service.Object):
             init_mub registers
         '''
         self.mub_data[hex(self.VER)]  = 0x01000001
-        self.mub_data[hex(self.SR)] = 0x00F00080
+        self.mub_data[hex(self.SR)] = 0x00F00000 #bit 7 not reset
         self.mub_data[hex(self.CR)] = 0x0
         self.mub_data[hex(self.PAR)] = 0x0
         for _tr in self.TRN:
@@ -116,20 +116,22 @@ class DBusMu(dbus.service.Object):
                 @type: string for read /write
                 @offset: read / write offset
         '''
+        #logger.debug(f"MUA before process SR {_type}: {hex(self.mua_data[hex(self.SR)])}")
+        #logger.debug(f"MUA CR {_type}: {hex(self.mua_data[hex(self.CR)])}")
         if _type == "mua_read":
             if offset in self.RRN:
                 # clear the sr Rx full of mua
-                self.mua_data[hex(self.SR)] &= ~(1<<(24 + int((offset - self.RRN[0])/4)))
+                self.mua_data[hex(self.SR)] &= ~(1<<(27 - int((offset - self.RRN[0])/4)))
                 # set the sr Tx empty of mub of mub
-                self.mub_data[hex(self.SR)] |= 1<<(20 + int((offset - self.RRN[0])/4))
+                self.mub_data[hex(self.SR)] |= 1<<(23 - int((offset - self.RRN[0])/4))
         elif _type == "mua_write":
             if offset in self.TRN:
                 # write to Rxn of mub
                 self.mub_data[hex(offset + self.TRN[0])] = self.mua_data[hex(offset)]
                 #set Rn full of mub
-                self.mub_data[hex(self.SR)] |= 1<<(24 + int((offset - self.TRN[0])/4))
+                self.mub_data[hex(self.SR)] |= 1<<(27 - int((offset - self.TRN[0])/4))
                 #clear the tx empty of mua
-                self.mua_data[hex(self.SR)] &= ~(1<<(20 + int((offset - self.TRN[0])/4)))
+                self.mua_data[hex(self.SR)] &= ~(1<<(23 - int((offset - self.TRN[0])/4)))
             elif offset == self.CR:
                 if self.mua_data[hex(self.CR)] & self.GIRN_MASK:
                     _v = self.mua_data[hex(self.CR)] & self.GIRN_MASK
@@ -145,17 +147,18 @@ class DBusMu(dbus.service.Object):
         elif _type == "mub_read":
             if offset in self.RRN:
                 # clear the sr Rx full of mub
-                self.mub_data[hex(self.SR)] &= ~(1<<(24 + int((offset - self.RRN[0])/4)))
+                self.mub_data[hex(self.SR)] &= ~(1<<(27 - int((offset - self.RRN[0])/4)))
                 # set the sr Tx empty of mua
-                self.mua_data[hex(self.SR)] |= 1<<(20 + int((offset - self.RRN[0])/4))
+                self.mua_data[hex(self.SR)] |= 1<<(23 - int((offset - self.RRN[0])/4))
         elif _type == "mub_write":
             if offset in self.TRN:
                 # write to Rxn of mua
                 self.mua_data[hex(offset + self.TRN[0])] = self.mub_data[hex(offset)]
                 #set sr rx full of mua
-                self.mua_data[hex(self.SR)] |= 1<<(24 + int((offset - self.TRN[0])/4))
+                self.mua_data[hex(self.SR)] |= 1<<(27 - int((offset - self.TRN[0])/4))
+                logger.debug(f"MUA ** SR {_type}: {hex(self.mua_data[hex(self.SR)])}")
                 # clear sr tx empty of mub
-                self.mub_data[hex(self.SR)] &= ~(1<<(20 + int((offset - self.TRN[0])/4)))
+                self.mub_data[hex(self.SR)] &= ~(1<<(23 - int((offset - self.TRN[0])/4)))
             elif offset == self.CR:
                 if self.mub_data[hex(self.CR)] & self.GIRN_MASK:
                     _v = self.mub_data[hex(self.CR)] & self.GIRN_MASK
@@ -170,10 +173,31 @@ class DBusMu(dbus.service.Object):
         else:
             pass
 
-        if self.mua_data[hex(self.SR)] & self.mua_data[hex(self.CR)] != 0:
-            self.MUASignal("mua interrupt")
+        irqa = False
+        irqb = False
+        #logger.debug(f"MUA after processing SR {_type}: {hex(self.mua_data[hex(self.SR)])}")
+        #logger.debug(f"MUA CR {_type}: {hex(self.mua_data[hex(self.CR)])}")
+        #logger.debug(f"MUB after processing SR {_type}: {hex(self.mub_data[hex(self.SR)])}")
+        #logger.debug(f"MUB CR {_type}: {hex(self.mub_data[hex(self.CR)])}")
+        if (self.mua_data[hex(self.CR)] & 0xF0000000) and ~(self.mua_data[hex(self.SR)] & 0xF00000):
+            irqa = True
+        if (self.mub_data[hex(self.CR)] & 0xF0000000) and ~(self.mub_data[hex(self.SR)] & 0xF00000):
+            irqb = True
 
-        if self.mub_data[hex(self.SR)] & self.mub_data[hex(self.CR)] != 0:
+        #TRn not empty
+        if (self.mua_data[hex(self.CR)] & 0xF0000000) & ~(self.mua_data[hex(self.SR)] & 0xF0000000):
+            irqa = True
+        if (self.mub_data[hex(self.CR)] & 0xF0000000) & ~(self.mub_data[hex(self.SR)] & 0xF0000000):
+            irqb = True
+        #RFn full
+        if self.mua_data[hex(self.CR)] & 0xF000000 != 0x0 and self.mua_data[hex(self.SR)] & 0xF000000 != 0x0:
+            irqa = True
+        if self.mub_data[hex(self.CR)] & 0xF000000 != 0x0 and self.mub_data[hex(self.SR)] & 0xF000000 != 0x0:
+            irqb = True
+
+        if irqa:
+            self.MUASignal("mua interrupt")
+        if irqb:
             self.MUBSignal("mub interrupt")
 
 
@@ -195,8 +219,8 @@ class DBusMu(dbus.service.Object):
             MUA init
         '''
         print("service: mua", str(message))
-        self.mua_data.clear()
-        self.init_mua_regs()
+        #self.mua_data.clear()
+        #self.init_mua_regs()
         return ["MUA Init", " from service.py", "with unique name",
                 session_bus.get_unique_name()]
 
@@ -233,10 +257,9 @@ class DBusMu(dbus.service.Object):
         logger.debug(f"write {hex(offset)}: {hex(value)}")
         data = self.mua_data[hex(offset)]
         if offset == 0x60: #SR
-            # GIPn write 1 clear
+            # GIPn write 1 clear 
             data &= ~(value&0xF0000000) #GIPn
             data &= ~(value&600) #RAIP/RDIP
-            data |= value&0x0FFFFFFF
         elif offset == 0x64: #CR
             data = value
         elif offset in [0x20, 0x24, 0x28, 0x2C]:
@@ -282,8 +305,8 @@ class DBusMu(dbus.service.Object):
             MUB init
         '''
         print("service: mub", str(message))
-        self.mub_data.clear()
-        self.init_mub_regs()
+        #self.mub_data.clear()
+        #self.init_mub_regs()
         return ["MUB Init", " from service.py", "with unique name",
                 session_bus.get_unique_name()]
 
@@ -299,7 +322,7 @@ class DBusMu(dbus.service.Object):
         if hex(offset) in self.mub_data:
             ret = self.mub_data[hex(offset)]
 
-        self.mu_updates("mub_read")
+        self.mu_updates("mub_read", offset)
         return ret
 
     @dbus.service.method("org.qemu.client.mub",
@@ -309,7 +332,7 @@ class DBusMu(dbus.service.Object):
             mub write
         '''
         logger.debug(f"write {hex(offset)}: {hex(value)}")
-        data = self.mua_data[hex(offset)]
+        data = self.mub_data[hex(offset)]
         if offset == 0x60: #SR
             # GIPn write 1 clear
             data &= ~(value&0xF0000000) #GIPn
@@ -323,7 +346,7 @@ class DBusMu(dbus.service.Object):
             return 0
 
         self.mub_data[hex(offset)] = data
-        self.mu_updates("mub_write")
+        self.mu_updates("mub_write", offset)
 
         return 0
 
