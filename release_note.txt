@@ -1,0 +1,3 @@
+This is a NXP customized qemu release to enable imimxrt595_evk platfrom
+the release tag is defined as
+qemu_7.2.50_rt595_cus_t: qemu 7.2.50 rt595 customized tag
