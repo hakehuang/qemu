@@ -176,7 +176,7 @@ static void rt_ostimer_realize(DeviceState *dev, Error **errp)
 
     s->timer = ptimer_init(rt_ostimer_tick, s, PTIMER_POLICY_CONTINUOUS_TRIGGER | PTIMER_POLICY_WRAP_AFTER_ONE_PERIOD); 
     ptimer_transaction_begin(s->timer);
-    ptimer_set_freq(s->timer, 1000000);
+    ptimer_set_freq(s->timer, 600000000);
     ptimer_run(s->timer, 0);
     ptimer_transaction_commit(s->timer);
 }

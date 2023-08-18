@@ -75,7 +75,7 @@ static void rt_pmc_write(void *opaque, hwaddr offset, uint64_t value,
 {
     RTPMCState *s = RT_PMC(opaque);
     uint32_t v32 = (uint32_t)value;
-    printf("\r\nrt-pmc write 0x%lx = 0x%lx\r\n", offset, value);
+    //printf("\r\nrt-pmc write 0x%lx = 0x%lx\r\n", offset, value);
 
     switch(offset) {
         case 0x4:
@@ -168,7 +168,7 @@ static void rt_pmc_tick(void *opaque)
         if(s->count >= s->AUTOWKUP)
         {
             s->count = 0;
-            printf("irq up\r\n");
+            //printf("irq up\r\n");
             qemu_set_irq(s->irq, 1);
             s->FLAGS |= FLAG_AUTOWKF_MASK;
         }

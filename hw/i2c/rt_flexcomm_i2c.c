@@ -193,7 +193,7 @@ static uint64_t rt_flexcomm_i2c_read(void *opaque, hwaddr offset,
             break;
     }
 
-    printf("[FLEXCOMM_I2C]: read 0x%lx = 0x%x\n", offset, v);
+    //printf("[FLEXCOMM_I2C]: read 0x%lx = 0x%x\n", offset, v);
     return v;
 }
 
@@ -209,7 +209,7 @@ static void rt_flexcomm_i2c_write(void *opaque, hwaddr offset,
     RTFLEXCOMMI2CState *s = (RTFLEXCOMMI2CState *)opaque;
     uint32_t v32 = (uint32_t)value;
 
-    printf("[FLEXCOMM_I2C]: write 0x%lx = 0x%lx\n", offset, value);
+    //printf("[FLEXCOMM_I2C]: write 0x%lx = 0x%lx\n", offset, value);
     switch (offset) {
         case 0x800:
             s->I2C_CFG = v32;

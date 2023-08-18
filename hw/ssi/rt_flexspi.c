@@ -31,6 +31,8 @@
         } \
     } while (0)
 
+#define INTR_IPTXWE (1U<<6)
+
 static const VMStateDescription vmstate_rt_flexspi = {
     .name = TYPE_RT_FLEXSPI,
     .version_id = 1,
@@ -194,7 +196,8 @@ static uint64_t rt_flexspi_read(void *opaque, hwaddr offset, unsigned size)
         value = s->INTEN;
         break;
         case 0x14:
-        value = s->INTR;
+        /* always ready to write */
+        value = s->INTR | INTR_IPTXWE;
         break;
         case 0x18:
         value = s->LUTKEY;
@@ -304,14 +307,17 @@ static uint64_t rt_flexspi_read(void *opaque, hwaddr offset, unsigned size)
         value = s->AHBSPNDSTS;
         break;
         case 0xF0:
-        value = s->IPRXFSTS;
+        /* always has data read abck  */
+        value = s->IPRXFSTS + 1;
         break;
         case 0xF4:
-        value = s->IPTXFSTS;
+        value = s->IPTXFSTS + 1;
         break;	
         default:
         break;
     }
+
+    //printf("[RSFLEXSPI]: read 0x%lx = 0x%x\n", offset, value);
 
     return (uint64_t)value;
 }
@@ -321,6 +327,8 @@ static void rt_flexspi_write(void *opaque, hwaddr offset, uint64_t value,
 {
     RTFLEXSPIState *s = opaque;
     uint32_t v32 = (uint32_t)value;
+
+    //printf("[RSFLEXSPI]: write 0x%lx = 0x%lx\n", offset, value);
 
     switch(offset)
     {
