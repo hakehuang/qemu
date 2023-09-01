@@ -6,6 +6,6 @@ Outgoing License:            GPL-2.0
 License File:                LICENSE
 Type of Content:             source
 Description and comments:    NXP extension works based on qemu project. mainly add RT595 board supporting, and this is demoed on ZDS2023 conference.
-Release Location:            https://github.com/NXP/qemu
-Origin:                      qemu (GPL-2.0)
+Release Location:            https://github.com/nxp-zephyr/qemu
+Origin:                      qemu(https://github.com/qemu/qemu) (GPL-2.0)
                              NXP (GPL-2.0)
