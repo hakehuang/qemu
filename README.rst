@@ -1,3 +1,7 @@
+Changes for this repo
+
+https://github.com/nxp-zephyr/qemu/wiki
+
 ===========
 QEMU README
 ===========
