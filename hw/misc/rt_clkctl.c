@@ -228,6 +228,7 @@ static uint64_t rt_clkctl0_read(void *opaque, hwaddr offset, unsigned size)
             value = s->DCPIXELCLKDIV & (~0xE0000000);
             break;
         default:
+            break;
     }    
 
     return value;
@@ -441,6 +442,7 @@ static void rt_clkctl0_write(void *opaque, hwaddr offset, uint64_t value,
             s->DCPIXELCLKDIV = v32;
             break;
         default:
+            break;
     }    
 
     return;
@@ -932,6 +934,7 @@ static uint64_t rt_clkctl1_read(void *opaque, hwaddr offset, unsigned size)
             value = s->ACMP0FCLKDIV & (~0xE0000000);
             break;
         default:
+            break;
     }    
 
     return value;
@@ -1239,6 +1242,7 @@ static void rt_clkctl1_write(void *opaque, hwaddr offset, uint64_t value,
             s->ACMP0FCLKDIV = v32;
             break;
         default:
+            break;
     }
 
     return;

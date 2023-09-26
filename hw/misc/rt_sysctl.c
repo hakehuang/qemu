@@ -31,6 +31,7 @@ static uint64_t rt_sysctl0_read(void *opaque, hwaddr offset, unsigned size)
      
     switch(offset) {
         default:
+            break;
     }    
 
     return s->reg[offset / 4];
@@ -108,6 +109,7 @@ static uint64_t rt_sysctl1_read(void *opaque, hwaddr offset, unsigned size)
      
     switch(offset) {
         default:
+            break;
     }    
 
     return s->reg[offset / 4];

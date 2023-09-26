@@ -240,11 +240,13 @@ static uint64_t rt_lpadc_read(void *opaque, hwaddr offset,
             value = s->CV[(offset - 0x200)/4];
             break;
         case 0x300 ... 0x304:
-            int reg_id = (offset - 0x300)/4;
-            if (!fifo32_is_empty(&s->RESFIFO[reg_id]))
             {
-                value = fifo32_pop(&s->RESFIFO[reg_id]);
-                s->FCTRL[reg_id] |= fifo32_num_used(&s->RESFIFO[reg_id]);
+                int reg_id = (offset - 0x300)/4;
+                if (!fifo32_is_empty(&s->RESFIFO[reg_id]))
+                {
+                    value = fifo32_pop(&s->RESFIFO[reg_id]);
+                    s->FCTRL[reg_id] |= fifo32_num_used(&s->RESFIFO[reg_id]);
+                }
             }
             break;
     }

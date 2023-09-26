@@ -64,6 +64,7 @@ static uint64_t rt_pmc_read(void *opaque, hwaddr offset, unsigned size)
             value = s->TSENSOR;
             break;
         default:
+            break;
     }
 
     return value;
@@ -111,6 +112,7 @@ static void rt_pmc_write(void *opaque, hwaddr offset, uint64_t value,
             s->TSENSOR = v32;
             break;
         default:
+            break;
     }
 
     return;
