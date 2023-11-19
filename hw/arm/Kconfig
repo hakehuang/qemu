@@ -600,3 +600,26 @@ config NXP_RT595
     select SDHCI
     select RT_PMC
     select RT_PINT
+
+config NXP_RT685
+    bool
+    select ARM_V7M
+    select ARM_GIC
+    select ARM_SMMUV3
+    select PLATFORM_BUS
+    select MEM_DEVICE
+    select RT_SYSCTL
+    select RT_RSTCTL
+    select RT_CLKCTL
+    select RT_PMC
+    select RT_FLEXSPI
+    select RT_FLEXCOMM
+    select RT_FLEXCOMM_I2C
+    select RT_LPADC
+    select RT_OSTIMER
+    select FXOS8700
+    select PCA9420
+    select DBUS_CLIENT
+    select SDHCI
+    select RT_PMC
+    select RT_PINT

@@ -125,6 +125,7 @@ OBJECT_DECLARE_TYPE(ARMSSE, ARMSSEClass,
 #define TYPE_IMX95  "imx95"
 #define TYPE_RW610_M33  "rw610_m33"
 #define TYPE_RT500_M33  "rt500_m33"
+#define TYPE_RT600_M33  "rt600_m33"
 #define TYPE_SSE200 "sse-200"
 #define TYPE_SSE300 "sse-300"
 

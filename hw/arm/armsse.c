@@ -100,6 +100,17 @@ static Property rt500_m33_properties[] = {
     DEFINE_PROP_END_OF_LIST()
 };
 
+static Property rt600_m33_properties[] = {
+    DEFINE_PROP_LINK("memory", ARMSSE, board_memory, TYPE_MEMORY_REGION,
+                     MemoryRegion *),
+    DEFINE_PROP_UINT32("EXP_NUMIRQ", ARMSSE, exp_numirq, 60),
+    DEFINE_PROP_UINT32("SRAM_ADDR_WIDTH", ARMSSE, sram_addr_width, 15),
+    DEFINE_PROP_UINT32("init-svtor", ARMSSE, init_svtor, 0x08000000),
+    DEFINE_PROP_BOOL("CPU0_FPU", ARMSSE, cpu_fpu[0], true),
+    DEFINE_PROP_BOOL("CPU0_DSP", ARMSSE, cpu_dsp[0], true),
+    DEFINE_PROP_END_OF_LIST()
+};
+
 static Property sse200_properties[] = {
     DEFINE_PROP_LINK("memory", ARMSSE, board_memory, TYPE_MEMORY_REGION,
                      MemoryRegion *),
@@ -269,6 +280,57 @@ static const ARMSSEDeviceInfo rt595_m33_devices[] ={
     }
 };
 
+
+static const ARMSSEDeviceInfo rt685_m33_devices[] ={
+    {
+        .name = "CACHE_Control_0",
+        .type = TYPE_UNIMPLEMENTED_DEVICE,
+        .index = 0,
+        .addr = 0x40033000,
+        .size = 0x1000,
+        .ppc = NO_PPC,
+        .irq = NO_IRQ,
+    },
+    {
+        .name = "IOPCTL",
+        .type = TYPE_UNIMPLEMENTED_DEVICE,
+        .index = 2,
+        .addr = 0x40004000,
+        .size = 0x1000,
+        .ppc = NO_PPC,
+        .irq = NO_IRQ,
+    },
+    {
+        .name = "PERIPHERAL_MUXES",
+        .type = TYPE_UNIMPLEMENTED_DEVICE,
+        .index = 3,
+        .addr = 0x40026000,
+        .size = 0x1000,
+        .ppc = NO_PPC,
+        .irq = NO_IRQ,
+    },
+    {
+        .name = "HS_GPIO",
+        .type = TYPE_UNIMPLEMENTED_DEVICE,
+        .index = 4,
+        .addr = 0x40100000,
+        .size = 0x3000,
+        .ppc = NO_PPC,
+        .irq = NO_IRQ,
+    },
+    {
+        .name = "SEC_HS_GPIO",
+        .type = TYPE_UNIMPLEMENTED_DEVICE,
+        .index = 5,
+        .addr = 0x40154000,
+        .size = 0x3000,
+        .ppc = NO_PPC,
+        .irq = NO_IRQ,
+    },
+    {
+        .name = NULL,
+    }
+};
 
 static const ARMSSEDeviceInfo sse200_devices[] = {
     {
@@ -658,6 +720,27 @@ static const ARMSSEInfo armsse_variants[] = {
         .has_tcms = false,
         .props = rt500_m33_properties,
         .devinfo = rt595_m33_devices,
+        .irq_is_common = sse200_irq_is_common,
+    },
+    {
+        .name = TYPE_RT600_M33,
+        .sse_version = ARMSSE_IOTKIT,
+        .cpu_type = ARM_CPU_TYPE_NAME("cortex-m33"),
+        .sram_banks = 1,
+        .sram_bank_base = 0x00000000,
+        .num_cpus = 1,
+        .sys_version = 0x41743,
+        .iidr = 0,
+        .cpuwait_rst = 0,
+        .has_mhus = false,
+        .has_cachectrl = true,
+        .has_cpusecctrl = true,
+        .has_cpuid = true,
+        .has_cpu_pwrctrl = true,
+        .has_sse_counter = false,
+        .has_tcms = false,
+        .props = rt600_m33_properties,
+        .devinfo = rt685_m33_devices,
         .irq_is_common = sse200_irq_is_common,
     },
 };
