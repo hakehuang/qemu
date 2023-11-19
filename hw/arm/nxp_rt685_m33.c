@@ -500,13 +500,7 @@ static void rt685_m33_common_init(MachineState *machine)
     make_alias(&mms->flexspi_ctl_s, system_memory, "flexspi ctl sec", 0x10000000 + _memmap.flexspi_ctl.start,
                 _memmap.flexspi_ctl.size, _memmap.flexspi_ctl.start);
 
-    sysbus_create_simple(TYPE_RT_FLEXSPI, (hwaddr)_memmap.flexspi1_ctl.start, NULL);
-    make_alias(&mms->flexspi1_ctl_s, system_memory, "flexspi1 ctl sec", 0x10000000 + _memmap.flexspi1_ctl.start,
-                _memmap.flexspi_ctl.size, _memmap.flexspi1_ctl.start);
-
-    make_alias(&mms->IOPCTL_s, system_memory, "IOPCTL_s sec", 0x10000000 + _memmap.IOPCTL.start,
-                _memmap.IOPCTL.size, _memmap.IOPCTL.start);
-    make_alias(&mms->PERIPHERAL_MUXES_s, system_memory, "flexspi ctl sec", 0x10000000 + _memmap.PERIPHERAL_MUXES.start,
+    make_alias(&mms->PERIPHERAL_MUXES_s, system_memory, "IOMUX_s", 0x10000000 + _memmap.PERIPHERAL_MUXES.start,
                 _memmap.PERIPHERAL_MUXES.size, _memmap.PERIPHERAL_MUXES.start);
 
     /* DMA hwtrigger */
