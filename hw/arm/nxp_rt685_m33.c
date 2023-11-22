@@ -438,6 +438,9 @@ static void rt685_m33_common_init(MachineState *machine)
 #endif
     int i = 0;
     for (i=0; i < RT685_M33_SRAM_BANKS; i++) {
+        if (_memmap.sram_part[i].size == 0) {
+		continue;
+	}
         char *sram_name = g_strdup_printf("sram%d", i);
         memory_region_init_ram(&mms->sram[i], NULL, sram_name, _memmap.sram_part[i].size, &error_fatal);
         memory_region_add_subregion(system_memory,  _memmap.sram_part[i].start, &mms->sram[i]);
