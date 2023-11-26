@@ -207,4 +207,7 @@ config PCA9420
 config DBUS_CLIENT
     bool
 
+config RT6XX_CLKCTL
+    bool
+
 source macio/Kconfig

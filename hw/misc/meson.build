@@ -135,6 +135,7 @@ softmmu_ss.add(when: 'CONFIG_RT_CLKCTL', if_true: files('rt_clkctl.c'))
 softmmu_ss.add(when: 'CONFIG_RT_PMC', if_true: files('rt_pmc.c'))
 softmmu_ss.add(when: 'CONFIG_FXOS8700', if_true: files('fxos8700.c'))
 softmmu_ss.add(when: 'CONFIG_PCA9420', if_true: files('pca9420.c'))
+softmmu_ss.add(when: 'CONFIG_RT6XX_CLKCTL', if_true: files('rt6xx_clkctl.c'))
 
 specific_ss.add(when: 'CONFIG_AVR_POWER', if_true: files('avr_power.c'))
 

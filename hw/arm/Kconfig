@@ -610,7 +610,7 @@ config NXP_RT685
     select MEM_DEVICE
     select RT_SYSCTL
     select RT_RSTCTL
-    select RT_CLKCTL
+    select RT6XX_CLKCTL
     select RT_PMC
     select RT_FLEXSPI
     select RT_FLEXCOMM
