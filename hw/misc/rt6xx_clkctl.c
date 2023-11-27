@@ -53,10 +53,10 @@ static uint64_t rt_clkctl0_read(void *opaque, hwaddr offset, unsigned size)
         case 0x78:
             break;
         case 0x100:
-            value -> s->FFROCTL0;
+            value = s->FFROCTL0;
             break;
         case 0x104:
-            value -> s->FFROCTL1;
+            value = s->FFROCTL1;
             break;
         case 0x160:
             value = s->SYSOSCCTL0;
@@ -117,16 +117,16 @@ static uint64_t rt_clkctl0_read(void *opaque, hwaddr offset, unsigned size)
             value = s->PFC1DIV & (~0xE0000000);
             break;
         case 0x620:
-            value = s->FLEXSPI0FCLKSEL;
+            value = s->FLEXSPIFCLKSEL;
             break;
         case 0x624:
-            value = s->FLEXSPI0FCLKDIV & (~0xE0000000);
+            value = s->FLEXSPIFCLKDIV & (~0xE0000000);
             break;
         case 0x640:
             value = s->SCTFCLKSEL;
             break;
         case 0x644:
-            value = s->SCTIN7CLKDIV & (~0xE0000000);
+            value = s->SCTFCLKDIV & (~0xE0000000);
             break;
         case 0x660:
             value = s->USBHSFCLKSEL;
@@ -162,10 +162,10 @@ static uint64_t rt_clkctl0_read(void *opaque, hwaddr offset, unsigned size)
             value = s->WDT0FCLKSEL;
             break;
         case 0x730:
-            value = s->A32KHZWAKECLKSEL;
+            value = s->WAKECLK32KHZSEL;
             break;
         case 0x734:
-            value = s->A32KHZWAKECLKDIV & (~0xE0000000);
+            value = s->WAKECLK32KHZDIV & (~0xE0000000);
             break;
         case 0x760:
             value = s->SYSTICKFCLKSEL;
@@ -279,16 +279,16 @@ static void rt_clkctl0_write(void *opaque, hwaddr offset, uint64_t value,
             s->PFC1DIV = v32 & (~0xE0000000);
             break;
         case 0x620:
-            s->FLEXSPI0FCLKSEL = v32;
+            s->FLEXSPIFCLKSEL = v32;
             break;
         case 0x624:
-            s->FLEXSPI0FCLKDIV = v32 & (~0xE0000000);
+            s->FLEXSPIFCLKDIV = v32 & (~0xE0000000);
             break;
         case 0x640:
             s->SCTFCLKSEL = v32;
             break;
         case 0x644:
-            s->SCTIN7CLKDIV = v32 & (~0xE0000000);
+            s->SCTFCLKDIV = v32 & (~0xE0000000);
             break;
         case 0x660:
             s->USBHSFCLKSEL = v32;
@@ -324,10 +324,10 @@ static void rt_clkctl0_write(void *opaque, hwaddr offset, uint64_t value,
             s->WDT0FCLKSEL = v32;
             break;
         case 0x730:
-            s->A32KHZWAKECLKSEL = v32;
+            s->WAKECLK32KHZSEL = v32;
             break;
         case 0x734:
-            s->A32KHZWAKECLKDIV = v32 & (~0xE0000000);
+            s->WAKECLK32KHZDIV = v32 & (~0xE0000000);
             break;
         case 0x760:
             s->SYSTICKFCLKSEL = v32;
@@ -559,11 +559,9 @@ static uint64_t rt_clkctl1_read(void *opaque, hwaddr offset, unsigned size)
         case 0x400:
             value = s->DSPCPUCLKDIV & (~0xE0000000);
             break;
-        case 0x400:
-            value = s->DSPCPUCLKDIV & (~0xE0000000);
-            break;
         case 0x404:
-            value = s->DSPMAINRAMCLKDIV;
+            value = s->DSPMAINRAMCLKDIV & (~0xE0000000);
+            break;
         case 0x430:
             value = s->DSPCPUCLKSELA;
             break;
@@ -571,7 +569,7 @@ static uint64_t rt_clkctl1_read(void *opaque, hwaddr offset, unsigned size)
             value = s->DSPCPUCLKSELB;
             break;
         case 0x480:
-            value = s->OSEVENTTFCLKSEL;
+            value = s->OSEVENTFCLKSEL;
             break;
         case 0x500:
             value = s->FRG0CLKSEL;
@@ -682,7 +680,7 @@ static uint64_t rt_clkctl1_read(void *opaque, hwaddr offset, unsigned size)
         case 0x728:
             value = s->CT32BIT2FCLKSEL;
             break;
-        case 0x728:
+        case 0x72C:
             value = s->CT32BIT3FCLKSEL;
             break;
         case 0x730:
@@ -805,7 +803,7 @@ static void rt_clkctl1_write(void *opaque, hwaddr offset, uint64_t value,
             s->DSPCPUCLKSELB = v32;
             break;
         case 0x480:
-            s->OSEVENTTFCLKSEL = v32;
+            s->OSEVENTFCLKSEL = v32;
             break;
         case 0x500:
             s->FRG0CLKSEL = v32;
