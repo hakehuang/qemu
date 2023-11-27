@@ -36,7 +36,7 @@
 #include "hw/arm/nxp_rt685.h"
 #include "hw/misc/rt_sysctl.h"
 #include "hw/misc/rt_rstctl.h"
-#include "hw/misc/rt_clkctl.h"
+#include "hw/misc/rt6xx_clkctl.h"
 #include "hw/misc/rt_pmc.h"
 #include "hw/ssi/rt_flexspi.h"
 #include "hw/char/rt_flexcomm.h"
@@ -487,11 +487,11 @@ static void rt685_m33_common_init(MachineState *machine)
     make_alias(&mms->RSTCTL1_s, system_memory, "rstctrl1 sec", 0x10000000 + _memmap.RSTCTL1.start,
                 _memmap.RSTCTL1.size, _memmap.RSTCTL1.start);
 
-    sysbus_create_simple(TYPE_RT_CLKCTL0, (hwaddr)_memmap.CLKCTL0.start, NULL);
+    sysbus_create_simple(TYPE_RT6XX_CLKCTL0, (hwaddr)_memmap.CLKCTL0.start, NULL);
     make_alias(&mms->CLKCTL0_s, system_memory, "clkctrl0 sec", 0x10000000 + _memmap.CLKCTL0.start,
                 _memmap.CLKCTL0.size, _memmap.CLKCTL0.start);
 
-    sysbus_create_simple(TYPE_RT_CLKCTL1, (hwaddr)_memmap.CLKCTL1.start, NULL);
+    sysbus_create_simple(TYPE_RT6XX_CLKCTL1, (hwaddr)_memmap.CLKCTL1.start, NULL);
     make_alias(&mms->CLKCTL1_s, system_memory, "clkctrl1 sec", 0x10000000 + _memmap.CLKCTL1.start,
                 _memmap.CLKCTL1.size, _memmap.CLKCTL1.start);
 

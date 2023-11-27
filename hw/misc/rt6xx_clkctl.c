@@ -509,6 +509,7 @@ static uint64_t rt_clkctl1_read(void *opaque, hwaddr offset, unsigned size)
 {
     RT6XXCLKCTL1State *s = RT6XX_CLKCTL1(opaque);
     uint32_t value = 0xFEFEFEFE;
+    printf("CLKCTL1 read 0x%lx", offset);
      
     switch(offset) {
         case 0x10:
