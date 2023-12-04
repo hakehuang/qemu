@@ -185,6 +185,9 @@ static void rt685_m33_mmap_init(MachineState *machine)
     _memmap.pint[6].irq_num       = 37;
     _memmap.pint[7].irq_num       = 38;
 
+    _memmap.rom.start        = 0x03000000;
+    _memmap.rom.size         = 0x3FFFF;
+
 }
 
 static void rt685_dma_hwtrigger_req(Notifier *n, void *opaque)
@@ -205,6 +208,63 @@ static void make_alias(MemoryRegion *mr, MemoryRegion *container,
     memory_region_init_alias(mr, NULL, name, container, orig, size);
     /* The alias is even lower priority than unimplemented_device regions */
     memory_region_add_subregion_overlap(container, base, mr, -1500);
+}
+
+
+static void _load_bootrom(RT685_M33_MachineState *mms)
+{
+    if (mms->boot_rom_path != NULL)
+    {
+        uint32_t rom_address = _memmap.rom.start;
+        FILE *rom_image = fopen(mms->boot_rom_path, "r");
+        uint32_t image_len = 0;
+        if (rom_image != NULL) {
+            guint8 buf[256] = {0};
+            while(fread(buf, 1, 256, rom_image) != 0) {
+                cpu_physical_memory_write(rom_address, &buf, 256);
+                rom_address += 256;
+                image_len += 256;
+                memset(buf, 0 , 256);
+            }
+            fclose(rom_image);
+        } else {
+            printf("[ROM_EMU] open file %s fail, errno:%x\n", mms->boot_rom_path, errno);
+        }
+    }
+}
+
+static void rt685_resolve_machine_rom(RT685_M33_MachineState *mms)
+{
+    HostMemoryBackend *backend;
+
+    /* hardcode dtcm backend id */
+    backend = (HostMemoryBackend *)object_resolve_path_type("rt685_rom",
+                      TYPE_MEMORY_BACKEND, NULL);
+  
+    if (!backend) {
+        info_report("[ROM_EMU] not backend for ROM found, use mem fallback");
+        memory_region_init_ram(&mms->rom_ns, NULL, "rom", _memmap.rom.size, &error_fatal); /* 128M */
+        memory_region_add_subregion(get_system_memory(), _memmap.rom.start, &mms->rom_ns);
+        make_alias(&mms->rom_s, get_system_memory(), "rom_s", 0x10000000 + _memmap.rom.start,
+            _memmap.rom.size, _memmap.rom.start);
+        return;
+    }
+
+    MemoryRegion *ret = host_memory_backend_get_memory(backend);
+
+    if (host_memory_backend_is_mapped(backend)) {
+        error_report("memory backend %s can't be used multiple times.",
+                     object_get_canonical_path_component(OBJECT(backend)));
+        exit(EXIT_FAILURE);
+    }
+    host_memory_backend_set_mapped(backend, true);
+    vmstate_register_ram_global(ret);
+    memory_region_add_subregion(get_system_memory(), _memmap.rom.start, ret);
+    make_alias(&mms->rom_s, get_system_memory(), "rom_s", 0x10000000 + _memmap.rom.start,
+            _memmap.rom.size, _memmap.rom.start);
+    info_report("[ROM_EMU] backend for rom mapped");
+
+    return;
 }
 
 static void rt685_resolve_machine_pint(RT685_M33_MachineState *mms)
@@ -513,7 +573,10 @@ static void rt685_m33_common_init(MachineState *machine)
 
     rt685_resolve_machine_sdio(mms, 0);
     rt685_resolve_machine_sdio(mms, 1);
-    /* ram boot  */
+
+    /* load fake rom */
+    _load_bootrom(mms);
+    /* boot */
     armv7m_load_kernel(ARM_CPU(first_cpu), machine->kernel_filename, 0x80000000, 0x400000);
 }
 
@@ -532,6 +595,7 @@ static void rt685_m33_idau_check(IDAUInterface *ii, uint32_t address,
 static Property rt685_m33_soc_properties[] = {
     DEFINE_PROP_UINT32("boot-base-addr", RT685_M33_MachineState, boot_base_addr,
                         0x18001000),
+    DEFINE_PROP_STRING("boot_rom_path", RT685_M33_MachineState, boot_rom_path),
     DEFINE_PROP_END_OF_LIST(),
 };
 

@@ -67,6 +67,7 @@ typedef struct rt685_memmap_tag {
     mem_region pmc;
     mem_region mua;
     mem_region pint[8];
+    mem_region rom;
 
 } rt685_m33_memmap_t;
 
@@ -110,6 +111,7 @@ typedef struct {
     MemoryRegion pmc;
     MemoryRegion pint;
     MemoryRegion puf;
+    MemoryRegion rom_ns;
 
     MemoryRegion CACHE_Control_0_s;
     MemoryRegion CACHE_Control_1_s;
@@ -133,6 +135,7 @@ typedef struct {
     MemoryRegion mua_s;
     MemoryRegion pint_s;
     MemoryRegion puf_s;
+    MemoryRegion rom_s;
 
     uint32_t boot_base_addr;
 
@@ -145,6 +148,8 @@ typedef struct {
     SplitIRQ sec_resp_splitter;
     Clock *sysclk;
     Clock *s32kclk;
+
+    char *boot_rom_path;
 } RT685_M33_MachineState;
 
 #define TYPE_RT685_CM33_CORE "rt685-cm33-core"
