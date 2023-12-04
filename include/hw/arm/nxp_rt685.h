@@ -67,7 +67,6 @@ typedef struct rt685_memmap_tag {
     mem_region pmc;
     mem_region mua;
     mem_region pint[8];
-    mem_region rom;
 
 } rt685_m33_memmap_t;
 

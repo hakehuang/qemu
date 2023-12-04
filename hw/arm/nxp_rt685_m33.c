@@ -247,6 +247,7 @@ static void rt685_resolve_machine_rom(RT685_M33_MachineState *mms)
         memory_region_add_subregion(get_system_memory(), _memmap.rom.start, &mms->rom_ns);
         make_alias(&mms->rom_s, get_system_memory(), "rom_s", 0x10000000 + _memmap.rom.start,
             _memmap.rom.size, _memmap.rom.start);
+        _load_bootrom(mms);
         return;
     }
 
@@ -263,7 +264,7 @@ static void rt685_resolve_machine_rom(RT685_M33_MachineState *mms)
     make_alias(&mms->rom_s, get_system_memory(), "rom_s", 0x10000000 + _memmap.rom.start,
             _memmap.rom.size, _memmap.rom.start);
     info_report("[ROM_EMU] backend for rom mapped");
-
+    _load_bootrom(mms);
     return;
 }
 
@@ -575,7 +576,7 @@ static void rt685_m33_common_init(MachineState *machine)
     rt685_resolve_machine_sdio(mms, 1);
 
     /* load fake rom */
-    _load_bootrom(mms);
+    rt685_resolve_machine_rom(mms);
     /* boot */
     armv7m_load_kernel(ARM_CPU(first_cpu), machine->kernel_filename, 0x80000000, 0x400000);
 }
@@ -595,7 +596,7 @@ static void rt685_m33_idau_check(IDAUInterface *ii, uint32_t address,
 static Property rt685_m33_soc_properties[] = {
     DEFINE_PROP_UINT32("boot-base-addr", RT685_M33_MachineState, boot_base_addr,
                         0x18001000),
-    DEFINE_PROP_STRING("boot_rom_path", RT685_M33_MachineState, boot_rom_path),
+    DEFINE_PROP_STRING("boot-rom-path", RT685_M33_MachineState, boot_rom_path),
     DEFINE_PROP_END_OF_LIST(),
 };
 
